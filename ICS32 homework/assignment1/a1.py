@@ -8,81 +8,108 @@ import shlex
 NOTES_PATH = "."
 EXTENSION = ".dsu"
 
+
 def quit_the_program(instruction):
     return
 
 def create_new_file(instruction):
+    if len(instruction) !=4:
+        print("ERROR")
+        main()
+        return
+
     file=instruction[1]
     file=file.strip('"')
-
-    if not (Path(NOTES_PATH)/Path(file)).exists() or not (Path(NOTES_PATH)/Path(file)).is_dir():
-        print("ERROR: file not found")
+    file=Path(NOTES_PATH)/Path(file)
+    if not file.exists() or not file.is_dir():
+        print("ERROR")
+        main()
         return
 
     if instruction[2]== '-n':
-        file+=instruction[3]+EXTENSION
-    p = Path(NOTES_PATH) / file
+        file=file / Path(instruction[3]+EXTENSION)
+    p = file
 
     if p.exists():
-        print("ERROR: file already exists")
+        print("ERROR")
     else:
         p.touch()
+        print(p)
+
 
     main()
 
 def delete_file(instruction):
+    if len(instruction) !=2:
+        print("ERROR")
+        main()
+        return
     path = Path(NOTES_PATH)/Path(instruction[1].strip('"'))
 
     if not path.exists():
-        print("ERROR: file not found")
+        print("ERROR")
+        main()
         return
 
     if path.suffix != '.dsu':
-        print("ERROR: not a DSU file.")
+        print("ERROR")
+        main()
         return
 
     try:
         path.unlink()
-        print(f"{path} DELETED\n")
+        print(f"{path} DELETED")
     except FileNotFoundError:
-        print(f"ERROR: file not found: {path}")
+        print(f"ERROR")
+        print(path)
 
     main()
 
 def read_content(instruction):
+    if len(instruction) !=2:
+        print("ERROR")
+        main()
+        return
+
     path = Path(NOTES_PATH) / Path(instruction[1].strip('"'))
 
     if not path.exists():
-        print("ERROR: file not found")
+        print("ERROR")
+        main()
         return
 
     if path.suffix != '.dsu':
-        print("ERROR: not a DSU file.")
+        print("ERROR")
+        main()
         return
 
     if path.stat().st_size == 0:
         print("EMPTY")
+        main()
         return
 
     try:
         with path.open('r') as file:
             for line in file:
                 print(line.strip())
-            print()
     except Exception as e:
         print(e)
+        main()
         return
 
     main()
 
 def main():
-    print('Supported Commands\nC - Create a new file in the specified directory.\nD - Delete the file.\nR - Read the contents of a file.\nQ- Quit the program.\n')
     instruction=input()
-    print()
+    instruction=instruction.replace('\\', '\\\\')
     instruction_split=shlex.split(instruction)
     command=instruction_split[0].upper()
-    COMMAND[command](instruction_split)
-
+    if command in COMMAND:
+        COMMAND[command](instruction_split)
+    else:
+        print("ERROR")
+        main()
+        return
     return
 
 
