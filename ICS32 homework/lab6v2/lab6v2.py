@@ -5,9 +5,9 @@
 # Replace the following placeholders with your information.
 # Please see the README in this repository for the requirements of this lab exercise
 
-# NAME
-# EMAIL
-# STUDENT ID
+# Songhao Gao
+# songhag@uci.edu
+# 42515328
 
 """
 This program enables a user to input short one line notes and have them stored in a file called pynote.txt
@@ -21,7 +21,6 @@ BOOKMARK_PATH = "."
 BOOKMARK_FILE = "pybookmark.txt"
 
 class Bookmarker(Note):
-    # TODO: add init function with param(s). Add call to parent init using super. 
     # If you are unsure about param(s), study the class instantiation code at the bottom of the module.
     def __init__(self, bookmark_path: Path):
         super().__init__(bookmark_path)
@@ -38,7 +37,6 @@ class Bookmarker(Note):
         # but reinforces why inheritance can be useful. We are reusing the save_note code, 
         # while introducing custom operations that meet the needs of our program.
         if url.startswith("http"):
-            # TODO add call to parent class here
             self.save_note(url)
         else:
             raise ValueError("The value assigned to the url parameter is not valid.")
@@ -60,7 +58,6 @@ class Bookmarker(Note):
         except ValueError:
             pass
         else:
-            # TODO add call to parent class here to remove the url
             self.remove_note(id)
     
     def remove_by_id(self, url_id:str):
@@ -72,7 +69,6 @@ class Bookmarker(Note):
 
         if self._is_int(url_id):
             id = int(url_id)
-            # TODO add call to parent class here to remove the url
             self.remove_note(id)
 
     def find(self, keyword:str) -> list[str]:
@@ -94,7 +90,7 @@ class Bookmarker(Note):
         """
         if self._is_int(url_id):
             id = int(url_id)
-            url = self.remove_note(id)# TODO add call to parent class here to get the url from memory using id
+            url = self.remove_note(id)
             webbrowser.open(url)
         else:
             raise ValueError("The url_id does not match a valid bookmark")
