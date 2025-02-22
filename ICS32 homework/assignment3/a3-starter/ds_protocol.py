@@ -1,6 +1,7 @@
 # ds_protocol.py
 
-# Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
+# Starter code for assignment 3 in ICS 32
+# Programming with Software Libraries in Python
 
 # Replace the following placeholders with your information.
 
@@ -18,7 +19,8 @@ DataTuple = namedtuple('DataTuple', ['type', 'message', 'token'])
 
 def extract_json(json_msg: str) -> DataTuple:
     '''
-    Call the json.loads function on a json string and convert it to a DataTuple object
+    Call the json.loads function on a json
+    string and convert it to a DataTuple object
 
     '''
     try:

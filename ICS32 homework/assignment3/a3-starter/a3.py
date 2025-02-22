@@ -3,7 +3,8 @@ from pickle import GLOBAL
 
 from pyexpat.errors import messages
 
-# Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
+# Starter code for assignment 3 in ICS 32
+# Programming with Software Libraries in Python
 
 # Replace the following placeholders with your information.
 
@@ -184,7 +185,7 @@ def second_part():
 
     command = instruction_split[0].upper()
 
-    if len(instruction_split) == 1 and command != 'Q':
+    if len(instruction_split) == 1 and command != 'Q' and command != 'U':
         ui.wrong_instruction()
         return second_part()
 
@@ -202,12 +203,16 @@ def second_part():
 def edit_profile(instruction):
     global PATH
 
+    if len(instruction) < 3:
+        ui.wrong_instruction()
+        return
+
     for i in range(1, len(instruction), 2):
         if instruction[i] in EDIT_COMMAND:
             EDIT_COMMAND[instruction[i]](instruction[i+1])
         else:
             ui.wrong_instruction()
-            return 0
+            return
 
     PROFILE.save_profile(PATH)
     ui.success_edit()
@@ -216,13 +221,13 @@ def edit_profile(instruction):
 
 
 def print_profile(instruction):
-    temp2=1
+    temp2 = 1
 
     if len(instruction) == 1:
         return
 
     if instruction[1] in PRINT_COMMAND:
-        temp2=PRINT_COMMAND[instruction[1]](instruction)
+        temp2 = PRINT_COMMAND[instruction[1]](instruction)
     else:
         ui.wrong_instruction()
         return
@@ -237,23 +242,44 @@ def print_profile(instruction):
     print_profile(instruction)
     return
 
+
 def upload_profile(instruction):
     global PATH
-    id=''
-    if len(instruction) != 2:
-        ui.wrong_instruction()
-        return
+    global PROFILE
+    id = ''
+    instruction = instruction[0]
 
-    if instruction[1].isdigit():
-        id=instruction[1]
+    print('Do you want to upload your Profile '
+          'or Biography or both? enter P or B or A')
+    u = input()
+
+    if u.upper() == 'P':
+        print('Which ID do you want to upload for your Profile?')
+        id = input()
+        if id.isdigit():
+            id = id
+            connect_upload_server(id=id)
+        else:
+            ui.wrong_instruction()
+            return
+    elif u.upper() == 'B':
+        connect_upload_server(new_bio=PROFILE.bio)
+    elif u.upper() == 'A':
+        print('Which ID do you want to upload for your Profile?')
+        id = input()
+        if id.isdigit():
+            id = id
+            connect_upload_server(id=id, new_bio=PROFILE.bio)
+        else:
+            ui.wrong_instruction()
     else:
         ui.wrong_instruction()
         return
 
-    connect_upload_server(id=id)
     return
 
-def connect_upload_server(id=None,new_bio=None):
+
+def connect_upload_server(id=None, new_bio=None):
     global PROFILE
     profile = PROFILE
 
@@ -261,9 +287,9 @@ def connect_upload_server(id=None,new_bio=None):
     port = 3001
     username = profile.username
     password = profile.password
-    bio = profile.bio
+    bio = new_bio
     post = profile._posts
-    message=''
+    message = None
     if id is not None:
         if len(post) < int(id):
             ui.wrong_instruction()
@@ -271,16 +297,19 @@ def connect_upload_server(id=None,new_bio=None):
         message = post[int(id) - 1]['entry']
 
     if new_bio is not None:
-        success = ds_client.send(server, port, username, password, message, bio=new_bio)
+        success = ds_client.send(server, port, username,
+                                 password, message, bio=new_bio)
     else:
-        success = ds_client.send(server, port, username, password, message, bio)
+        success = ds_client.send(server, port, username,
+                                 password, message, bio)
 
     if success:
-        print("Message and bio sent successfully.\n")
+        print("Message or bio sent successfully.\n")
     else:
-        print("Failed to send message and bio.")
+        print("Failed to send message or bio.")
         return
     return
+
 
 def edit_username(instruction):
     global PROFILE
@@ -298,8 +327,7 @@ def edit_bio(instruction):
     global PROFILE
     PROFILE.bio = instruction
 
-    print("Do you want to upload your bio? (enter Y or N)")
-    upload=input()
+    upload = ui.ask_upload_bio()
 
     while True:
         if upload.upper() == 'Y':
@@ -308,8 +336,7 @@ def edit_bio(instruction):
         elif upload.upper() == 'N':
             return
         else:
-            print("Please enter Y or N.")
-            upload=input()
+            upload = ui.ask_upload_bio()
     return
 
 
@@ -317,6 +344,17 @@ def edit_add_post(instruction):
     global PROFILE
     post = Profile.Post(instruction)
     PROFILE.add_post(post)
+
+    upload = ui.ask_upload_post()
+
+    while True:
+        if upload.upper() == 'Y':
+            connect_upload_server(id=str(len(PROFILE._posts)))
+            return
+        elif upload.upper() == 'N':
+            return
+        else:
+            upload = ui.ask_upload_post()
     return
 
 

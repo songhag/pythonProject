@@ -152,7 +152,8 @@ def main_process():
     global MODE
     global COUNT
     if MODE != 1:
-        print("Do you want to edit or print the DSU file or upload post on server"
+        print("Do you want to edit or print the "
+              "DSU file or upload post on server"
               "(E for edit or P for print or U for upload)?")
         if COUNT < 1:
             print('E options:')
@@ -160,7 +161,23 @@ def main_process():
             print('P options:')
             print('-usr | -pwd | -bio | -posts | -post [ID] | -all \n')
             print('U options:')
-            print('[ID] (for posts)\n')
+            print('U\n')
     instruction = input()
     COUNT = COUNT + 1
     return instruction
+
+
+def ask_upload_bio():
+    global MODE
+    if MODE != 1:
+        print("Do you want to upload your bio? (enter Y or N)")
+        upload = input()
+    return upload
+
+
+def ask_upload_post():
+    global MODE
+    if MODE != 1:
+        print("Do you want to upload your post? (enter Y or N)")
+        upload = input()
+    return upload

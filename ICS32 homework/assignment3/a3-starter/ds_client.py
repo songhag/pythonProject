@@ -1,4 +1,5 @@
-# Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
+# Starter code for assignment 3 in ICS 32
+# Programming with Software Libraries in Python
 
 # Replace the following placeholders with your information.
 
@@ -12,7 +13,8 @@ import time
 from ds_protocol import extract_json
 
 
-def send(server: str, port: int, username: str, password: str, message: str, bio: str = None):
+def send(server: str, port: int, username: str,
+         password: str, message: str, bio: str = None):
     '''
     The send function joins a ds server and sends a message, bio, or both
 
@@ -51,24 +53,29 @@ def send(server: str, port: int, username: str, password: str, message: str, bio
             success = True
 
             # Send post command if message is provided
-            if message.strip()!='':
-                post_cmd = json.dumps({
-                    "token": token,
-                    "post": {
-                        "entry": message,
-                        "timestamp": time.time()
-                    }
-                })
-                send_file.write(post_cmd + '\r\n')
-                send_file.flush()
+            if message is not None:
+                if message.strip() != '':
+                    post_cmd = json.dumps({
+                        "token": token,
+                        "post": {
+                            "entry": message,
+                            "timestamp": time.time()
+                        }
+                    })
+                    send_file.write(post_cmd + '\r\n')
+                    send_file.flush()
 
-                post_resp = recv_file.readline()
-                post_data = extract_json(post_resp)
-                if post_data.type != 'ok':
-                    success = False
-
+                    post_resp = recv_file.readline()
+                    post_data = extract_json(post_resp)
+                    if post_data.type != 'ok':
+                        success = False
+                else:
+                    print("Can't upload nothing")
+                    return False
             # Send bio command if bio is provided and no errors so far
-            if bio.strip()!='' and success:
+            if bio is None and success:
+                return success
+            if bio.strip() != '' and success:
                 bio_cmd = json.dumps({
                     "token": token,
                     "bio": {
