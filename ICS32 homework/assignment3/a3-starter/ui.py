@@ -65,7 +65,8 @@ def asking_profile():
         print('username: a unique name to associate the '
               'user with posts.\npassword: a password to '
               'protect access to user journal entries.\n'
-              'bio: a brief description of the user.')
+              'bio: a brief description of the user.\n'
+              'Server: a server')
 
         while True:
             name = input('Name:\n')
@@ -83,7 +84,14 @@ def asking_profile():
 
         bio = input('Biography:\n')
 
-    return [name, password, bio]
+        while True:
+            server = input('Server:\n')
+            if server.strip() == '':
+                print('Server cannot be an empty string.')
+            else:
+                break
+
+    return [name, password, bio,server]
 
 
 def existing_file(username, bio):

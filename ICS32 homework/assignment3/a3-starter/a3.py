@@ -171,6 +171,7 @@ def collect_profiles(path):
         print(path)
         PROFILE = Profile.Profile(username=profiles[0], password=profiles[1])
         PROFILE.bio = profiles[2]
+        PROFILE.dsuserver = profiles[3]
         PROFILE.save_profile(path)
         ui.success_create()
 
@@ -284,6 +285,8 @@ def connect_upload_server(id=None, new_bio=None):
     profile = PROFILE
 
     server = profile.dsuserver
+    if server is None:
+        server="127.0.0.1"
     port = 3001
     username = profile.username
     password = profile.password

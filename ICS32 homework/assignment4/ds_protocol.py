@@ -64,3 +64,23 @@ def bio_message(token, bio):
         }
     })
     return bio_cmd
+
+def format_direct_message(token, entry, recipient, timestamp):
+    direct_cmd = json.dumps({
+        "token": token,
+        "directmessage": {
+            "entry": entry,
+            "recipient": recipient,
+            "timestamp": timestamp
+        }
+    })
+    return direct_cmd
+
+def retrieve_messages(token, mode):
+    retrieve_cmd = json.dumps({
+        "token": token,
+        "directmessage": mode
+    })
+    return retrieve_cmd
+
+
