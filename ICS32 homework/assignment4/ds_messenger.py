@@ -17,31 +17,29 @@ class DirectMessenger:
         self.port = 3001
         self.username = username
         self.password = password
-        self.success=self._connect()
-        self.send_file = None
-        self.recv_file = None
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.success = self._connect()
 
     def _connect(self):
         try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
-                client.connect((self.dsuserver, self.port))
-                self.send_file = client.makefile('w')
-                self.recv_file = client.makefile('r')
+            self.client.connect((self.dsuserver, self.port))
+            send_file = self.client.makefile('w')
+            recv_file = self.client.makefile('r')
 
-                # Send join command
-                join_cmd = join_message(self.username, self.password)
+            # Send join command
+            join_cmd = join_message(self.username, self.password)
 
-                self.send_file.write(join_cmd + '\r\n')
-                self.send_file.flush()
+            send_file.write(join_cmd + '\r\n')
+            send_file.flush()
 
-                # Process join response
-                join_resp = self.recv_file.readline()
-                join_data = extract_json(join_resp)
-                if join_data.type != 'ok' or not join_data.token:
-                    return False
-                self.token = join_data.token
+            # Process join response
+            join_resp = recv_file.readline()
+            join_data = extract_json(join_resp)
+            if join_data.type != 'ok' or not join_data.token:
+                return False
+            self.token = join_data.token
 
-                return True
+            return True
         except:
             return False
 
@@ -52,10 +50,12 @@ class DirectMessenger:
                 if message.strip() != '':
                     msg = format_direct_message(self.token, message, recipient, time.time())
 
-                    self.send_file.write(msg + '\r\n')
-                    self.send_file.flush()
+                    send_file = self.client.makefile('w')
+                    recv_file = self.client.makefile('r')
+                    send_file.write(msg + '\r\n')
+                    send_file.flush()
 
-                    resp = self.recv_file.readline()
+                    resp = recv_file.readline()
                     data = extract_json(resp)
                     if data.type != 'ok':
                         self.success = False
@@ -73,15 +73,27 @@ class DirectMessenger:
         if self.success:
             msg = retrieve_messages(self.token, 'new')
 
-            self.send_file.write(msg + '\r\n')
-            self.send_file.flush()
+            send_file = self.client.makefile('w')
+            recv_file = self.client.makefile('r')
+            send_file.write(msg + '\r\n')
+            send_file.flush()
 
-            resp = self.recv_file.readline()
+            resp = recv_file.readline()
             data = extract_json(resp)
             if data.type != 'ok':
                 self.success = False
 
-            return data.message
+            # Convert server response to DirectMessage objects
+            messages = data.messages
+            dm_list = []
+            for msg_dict in messages:
+                dm = DirectMessage()
+                if 'from' in msg_dict:  # Received message (new messages are only incoming)
+                    dm.recipient = self.username
+                    dm.message = msg_dict.get('message')
+                    dm.timestamp = msg_dict.get('timestamp')
+                dm_list.append(dm)
+            return dm_list
         else:
             print("Fail to connect")
             return []
@@ -89,17 +101,36 @@ class DirectMessenger:
     def retrieve_all(self) -> list:
         # must return a list of DirectMessage objects containing all messages
         if self.success:
-            msg = retrieve_messages(self.token, 'new')
+            msg = retrieve_messages(self.token, 'all')
 
-            self.send_file.write(msg + '\r\n')
-            self.send_file.flush()
+            send_file = self.client.makefile('w')
+            recv_file = self.client.makefile('r')
+            send_file.write(msg + '\r\n')
+            send_file.flush()
 
-            resp = self.recv_file.readline()
+            resp = recv_file.readline()
             data = extract_json(resp)
             if data.type != 'ok':
                 self.success = False
 
-            return data.message
+            # Convert server response to DirectMessage objects
+            messages = data.messages
+            dm_list = []
+            for msg_dict in messages:
+                dm = DirectMessage()
+                if 'from' in msg_dict:  # Received message
+                    dm.recipient = self.username
+                    dm.message = msg_dict.get('message')
+                    dm.timestamp = msg_dict.get('timestamp')
+                else:  # Sent message
+                    dm.recipient = msg_dict.get('recipient')
+                    dm.message = msg_dict.get('message')
+                    dm.timestamp = msg_dict.get('timestamp')
+                dm_list.append(dm)
+            return dm_list
         else:
             print("Fail to connect")
             return []
+
+    def __del__(self): #close the client
+        self.client.close()

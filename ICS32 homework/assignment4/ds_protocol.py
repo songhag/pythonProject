@@ -14,7 +14,7 @@ from collections import namedtuple
 
 # Namedtuple to hold the values retrieved from json messages.
 
-DataTuple = namedtuple('DataTuple', ['type', 'message', 'token'])
+DataTuple = namedtuple('DataTuple', ['type', 'messages', 'token'])
 
 
 def extract_json(json_msg: str) -> DataTuple:
@@ -27,13 +27,15 @@ def extract_json(json_msg: str) -> DataTuple:
         json_obj = json.loads(json_msg)
         response = json_obj.get('response', {})
         data_type = response.get('type', 'error')
-        message = response.get('message', '')
+        messages = response.get('messages', response.get('message', ''))
         token = response.get('token', '')
-        return DataTuple(data_type, message, token)
+        print(messages,token,data_type)
+        return DataTuple(data_type, messages, token)
     except json.JSONDecodeError:
         return DataTuple('error', 'Invalid JSON', '')
     except Exception as e:
         return DataTuple('error', str(e), '')
+
 
 def join_message(username,password):
     join_cmd = json.dumps({
@@ -45,25 +47,6 @@ def join_message(username,password):
     })
     return join_cmd
 
-def post_message(token, message):
-    post_cmd=json.dumps({
-        "token": token,
-        "post": {
-            "entry": message,
-            "timestamp": time.time()
-        }
-    })
-    return post_cmd
-
-def bio_message(token, bio):
-    bio_cmd = json.dumps({
-        "token": token,
-        "bio": {
-            "entry": bio,
-            "timestamp": time.time()
-        }
-    })
-    return bio_cmd
 
 def format_direct_message(token, entry, recipient, timestamp):
     direct_cmd = json.dumps({
