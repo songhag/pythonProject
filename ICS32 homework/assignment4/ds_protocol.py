@@ -32,11 +32,9 @@ def extract_json(json_msg: str) -> DataTuple:
         return DataTuple(data_type, messages, token)
     except json.JSONDecodeError:
         return DataTuple('error', 'Invalid JSON', '')
-    except Exception as e:
-        return DataTuple('error', str(e), '')
 
 
-def join_message(username,password):
+def join_message(username, password):
     join_cmd = json.dumps({
         "join": {
             "username": username,
@@ -58,11 +56,10 @@ def format_direct_message(token, entry, recipient, timestamp):
     })
     return direct_cmd
 
+
 def retrieve_messages(token, mode):
     retrieve_cmd = json.dumps({
         "token": token,
         "directmessage": mode
     })
     return retrieve_cmd
-
-

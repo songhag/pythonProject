@@ -1,52 +1,76 @@
-from ds_messenger import *
-import time
+# test_ds_messenger.py
+import uuid
+from ds_messenger import DirectMessenger
 
-# Server details
-server_address = '127.0.0.1'  # localhost
-username = 'testuser123'
-password = 'password123'
+def test_connect_success():
+    """Test successful connection with valid credentials."""
+    username = str(uuid.uuid4())
+    password = "testpass"
+    dm = DirectMessenger(dsuserver='localhost', username=username, password=password)
+    assert dm.success is True
+    assert dm.token is not None
 
-server_address2 = '127.0.0.1'  # localhost
-username2 = 'user2'
-password2 = '12'
-# Create a DirectMessenger instance and connect to the server
-messenger = DirectMessenger(
-    dsuserver=server_address,
-    username=username,
-    password=password
-)
-messenger2 = DirectMessenger(
-    dsuserver=server_address2,
-    username=username2,
-    password=password2
-)
-# Check if connection was successful
-if messenger.success:
-    print(f"Successfully connected as {username}")
+def test_connect_invalid_password():
+    """Test connection failure with invalid password."""
+    username = str(uuid.uuid4())
+    password = "valid_pass"
+    # Create user first
+    DirectMessenger(dsuserver='localhost', username=username, password=password)
+    # Attempt login with wrong password
+    dm_invalid = DirectMessenger(dsuserver='localhost', username=username, password="wrong_pass")
+    assert dm_invalid.success is False
+    assert dm_invalid.token is None
 
-    # Send a test message to another user (let's say 'user2')
-    recipient = 'user2'
-    message = "Hello! This is a test message2"
+def test_send_and_retrieve_new_message():
+    """Test sending a message and retrieving it as a new message."""
+    sender_name = str(uuid.uuid4())
+    recipient_name = str(uuid.uuid4())
+    password = "pass"
 
-    # Send the message
-    send_success = messenger.send(message, recipient)
+    # Ensure recipient exists
+    DirectMessenger(dsuserver='localhost', username=recipient_name, password=password)
 
-    if send_success:
-        print(f"Message sent successfully to {recipient}")
-    else:
-        print("Failed to send message")
-else:
-    print("Failed to connect to the server")
+    # Send message
+    sender = DirectMessenger(dsuserver='localhost', username=sender_name, password=password)
+    assert sender.send("Hello, pytest!", recipient_name) is True
 
+    # Retrieve new messages as recipient
+    recipient = DirectMessenger(dsuserver='localhost', username=recipient_name, password=password)
+    new_messages = recipient.retrieve_new()
+    assert len(new_messages) == 1
+    assert new_messages[0].message == "Hello, pytest!"
+    assert new_messages[0].recipient == sender_name  # 'recipient' field stores the sender's username for incoming messages
 
-if messenger.success:
-    ms=messenger.retrieve_all()
-    for i in ms:
-        print(i.message)
+def test_retrieve_all_messages():
+    """Test retrieving all messages (sent and received)."""
+    sender_name = str(uuid.uuid4())
+    recipient_name = str(uuid.uuid4())
+    password = "pass"
 
-print()
+    # Create users
+    sender = DirectMessenger(dsuserver='localhost', username=sender_name, password=password)
+    DirectMessenger(dsuserver='localhost', username=recipient_name, password=password)
 
-if messenger.success:
-    ms=messenger.retrieve_new()
-    for i in ms:
-        print(i.message)
+    # Send two messages
+    assert sender.send("First message", recipient_name) is True
+    assert sender.send("Second message", recipient_name) is True
+
+    # Retrieve all messages as recipient
+    recipient = DirectMessenger(dsuserver='localhost', username=recipient_name, password=password)
+    all_messages = recipient.retrieve_all()
+    assert len(all_messages) >= 2
+    messages_content = [msg.message for msg in all_messages]
+    assert "First message" in messages_content
+    assert "Second message" in messages_content
+
+def test_send_empty_message():
+    """Test sending an empty message (should fail)."""
+    username = str(uuid.uuid4())
+    dm = DirectMessenger(dsuserver='localhost', username=username, password="pass")
+    assert dm.send("", "recipient") is False
+
+def test_retrieve_no_new_messages():
+    """Test retrieving new messages when none exist."""
+    username = str(uuid.uuid4())
+    dm = DirectMessenger(dsuserver='localhost', username=username, password="pass")
+    assert dm.retrieve_new() == []

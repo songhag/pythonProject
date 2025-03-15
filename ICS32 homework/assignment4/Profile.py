@@ -30,6 +30,7 @@ is raised when attempting to deserialize a dsu file to a Profile object.
 class DsuProfileError(Exception):
     pass
 
+
 class Profile:
     """
     The Profile class exposes the properties
@@ -55,8 +56,8 @@ class Profile:
         self.dsuserver = dsuserver  # REQUIRED
         self.username = username  # REQUIRED
         self.password = password  # REQUIRED
-        #if the recipient is myself, then the message is to me
-        self.conversation=[]
+        # if the recipient is myself, then the message is to me
+        self.conversation = []
 
     """
     save_profile accepts an existing dsu file to
@@ -114,6 +115,6 @@ class Profile:
         else:
             raise DsuFileError()
 
-
-    def add_conversation(self, messenger: str, message: str, recipient: str) -> None:
-            self.conversation.append((message, recipient, messenger))
+    def add_conversation(self, messenger: str,
+                         message: str, recipient: str) -> None:
+        self.conversation.append((message, recipient, messenger))

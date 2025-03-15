@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
-from typing import Text
-from Profile import *
-from ds_messenger import *
 from pathlib import Path
+from Profile import *  # pylint: disable=unused-wildcard-import
+from ds_messenger import *  # pylint: disable=unused-wildcard-import
+
 
 class Body(tk.Frame):
     def __init__(self, root, profile, recipient_selected_callback=None):
@@ -27,10 +27,12 @@ class Body(tk.Frame):
 
         for sender, recip, msg in reversed(self.profile.conversation):
             if sender == user and recip == selected_contact:
-                self.entry_editor.insert(tk.END, f"{selected_contact}: {msg}\n", 'entry-left')
+                self.entry_editor.insert(tk.END,
+                                         f"{selected_contact}: "
+                                         f"{msg}\n", 'entry-left')
             elif sender == selected_contact and recip == user:
-                self.entry_editor.insert(tk.END, f"You: {msg}\n", 'entry-right')
-
+                self.entry_editor.insert(tk.END,
+                                         f"You: {msg}\n", 'entry-right')
 
     def insert_contact(self, contact: str):
         self._contacts.append(contact)
@@ -42,16 +44,16 @@ class Body(tk.Frame):
             entry = contact[:24] + "..."
         id = self.posts_tree.insert('', id, id, text=contact)
 
-    def insert_user_message(self, message:str):
+    def insert_user_message(self, message: str):
         self.entry_editor.insert(1.0, message + '\n', 'entry-right')
 
-    def insert_contact_message(self, message:str):
+    def insert_contact_message(self, message: str):
         self.entry_editor.insert(1.0, message + '\n', 'entry-left')
 
     def get_text_entry(self) -> str:
         return self.message_editor.get('1.0', 'end').rstrip()
 
-    def set_text_entry(self, text:str):
+    def set_text_entry(self, text: str):
         self.message_editor.delete(1.0, tk.END)
         self.message_editor.insert(1.0, text)
 
@@ -94,6 +96,7 @@ class Body(tk.Frame):
 
 
 class Footer(tk.Frame):
+    """the footer functions"""
     def __init__(self, root, send_callback=None):
         tk.Frame.__init__(self, root)
         self.root = root
@@ -101,11 +104,13 @@ class Footer(tk.Frame):
         self._draw()
 
     def send_click(self):
+        """send the click event"""
         if self._send_callback is not None:
             self._send_callback()
 
     def _draw(self):
-        save_button = tk.Button(master=self, text="Send", width=20, command=self.send_click)
+        save_button = tk.Button(master=self,
+                                text="Send", width=20, command=self.send_click)
         # You must implement this.
         # Here you must configure the button to bind its click to
         # the send_click() function.
@@ -116,7 +121,11 @@ class Footer(tk.Frame):
 
 
 class NewContactDialog(tk.simpledialog.Dialog):
-    def __init__(self, root, title=None, user=None, pwd=None, server=None, path=None):
+    def __init__(self, root, title=None,
+                 user=None, pwd=None, server=None, path=None):
+        # pylint: disable = too-many-positional-arguments
+        # pylint: disable = too-many-arguments
+        # pylint: disable = too-many-instance-attributes
         self.root = root
         self.server = server
         self.user = user
@@ -125,17 +134,14 @@ class NewContactDialog(tk.simpledialog.Dialog):
         super().__init__(root, title)
 
     def body(self, frame):
-        # self.path_label = tk.Label(frame, width=30, text="Profile path")
-        # self.path_label.pack()
-        # self.path_entry = tk.Entry(frame, width=30)
-        #
-        # self.path_entry.insert(tk.END, self.path)
-        # self.path_entry.pack()
+        """create the main buttons"""
         self.path_label = tk.Label(frame, width=30, text="Profile path")
         self.path_label.pack()
-        self.browse_button = tk.Button(frame, text="Browse", command=self.browse_file)
+        self.browse_button = tk.Button(frame,
+                                       text="Browse", command=self.browse_file)
         self.browse_button.pack()
-        self.selected_path_label = tk.Label(frame, width=50, text=self.path or "No file selected")
+        self.selected_path_label = tk.Label(
+            frame, width=50, text=self.path or "No file selected")
         self.selected_path_label.pack()
 
         self.server_label = tk.Label(frame, width=30, text="DS Server Address")
@@ -155,7 +161,7 @@ class NewContactDialog(tk.simpledialog.Dialog):
         # but you will want to add self.password_entry['show'] = '*'
         # such that when the user types, the only thing that appears are
         # * symbols.
-        #self.password...
+        # self.password...
         self.password_label = tk.Label(frame, width=30, text="Password")
         self.password_label.pack()
         self.password_entry = tk.Entry(frame, width=30, show='*')
@@ -163,6 +169,7 @@ class NewContactDialog(tk.simpledialog.Dialog):
         self.password_entry.pack()
 
     def browse_file(self):
+        """ask for file"""
         filepath = filedialog.askopenfilename(
             filetypes=[("DSM Files", "*.dsu")],
             title="Select Profile File"
@@ -178,6 +185,8 @@ class NewContactDialog(tk.simpledialog.Dialog):
 
 
 class MainApp(tk.Frame):
+    """Create main window functions"""
+    # pylint: disable = too-many-instance-attributes
     def __init__(self, root):
         tk.Frame.__init__(self, root)
 
@@ -186,10 +195,10 @@ class MainApp(tk.Frame):
         self.password = ''
         self.server = ''
         self.recipient = ''
-        self.current_file=''
+        self.current_file = ''
         # You must implement this! You must configure and
         # instantiate your DirectMessenger instance after this line.
-        #self.direct_messenger = ... continue!
+        # self.direct_messenger = ... continue!
 
         self.profile = Profile()  # Add Profile instance
 
@@ -200,54 +209,62 @@ class MainApp(tk.Frame):
         # into the root frame
         self._draw()
 
-
     def send_message(self):
-        # You must implement this!
+        """send the message to the server"""
         message = self.body.get_text_entry()
         if not message or not self.recipient or not self.direct_messenger:
-            self.footer.footer_label.config(text="Error: Missing message or recipient")
+            self.footer.footer_label.config(
+                text="Error: Missing message or recipient")
             return
 
         try:
             if self.direct_messenger.send(message, self.recipient):
                 display_msg = message
                 self.body.insert_user_message(f'You: {message}')
-                self.profile.add_conversation(display_msg, self.recipient, self.username)
+                self.profile.add_conversation(
+                    display_msg, self.recipient, self.username)
                 self.body.set_text_entry('')
                 self.profile.save_profile(self.current_file)
                 self.body.profile.save_profile(self.current_file)
                 self.footer.footer_label.config(text="Message sent")
             else:
-                self.footer.footer_label.config(text="Error: Failed to send message")
-        except Exception as e:
+                self.footer.footer_label.config(
+                    text="Error: Failed to send message")
+        except Exception as e:  # pylint: disable = broad-exception-caught
             self.footer.footer_label.config(text=f"Error: {str(e)}")
 
     def add_contact(self):
-        # You must implement this!
+        """Add a new contact user"""
         # Hint: check how to use tk.simpledialog.askstring to retrieve
         # the name of the new contact, and then use one of the body
         # methods to add the contact to your contact list
-        new_contact = tk.simpledialog.askstring("Add Contact", "Enter username:")
+        new_contact = tk.simpledialog.askstring(
+            "Add Contact", "Enter username:")
         if new_contact:
             self.body.insert_contact(new_contact)
-        pass
 
     def recipient_selected(self, recipient):
+        """The user that you selected"""
         self.recipient = recipient
         self.footer.footer_label.config(text=f"Selected: {recipient}")
 
     def configure_server(self):
+        """configure a uploaded server"""
         ud = NewContactDialog(self.root, "Configure Account",
-                              self.username, self.password, self.server, self.current_file)
+                              self.username, self.password,
+                              self.server, self.current_file)
         self.username = ud.user
         self.password = ud.pwd
         self.server = ud.server
         self.current_file = ud.path
 
         filepath = Path(self.current_file)
-        if filepath.is_file() and filepath.exists() and filepath.suffix == '.dsu':
+        if (filepath.is_file() and filepath.exists()
+                and filepath.suffix == '.dsu'):
             self.profile.load_profile(filepath)
-            if self.profile.username is None and self.profile.password is None and self.profile.dsuserver is None:
+            if (self.profile.username is None and
+                    self.profile.password is None and
+                    self.profile.dsuserver is None):
                 self.profile.username = ud.user
                 self.profile.password = ud.pwd
                 self.profile.dsuserver = ud.server
@@ -256,15 +273,17 @@ class MainApp(tk.Frame):
             self.footer.footer_label.config(text="File not found")
             return
 
-        if self.profile.username != self.username or self.profile.password != self.password:
-            self.footer.footer_label.config(text="Error: Credentials do not match profile")
+        if (self.profile.username != self.username
+                or self.profile.password != self.password):
+            self.footer.footer_label.config(
+                text="Error: Credentials do not match profile")
             return
 
         # Load contacts into UI
-        self.body._contacts.clear()
+        self.body._contacts.clear()  # pylint: disable = protected-access
         self.body.posts_tree.delete(*self.body.posts_tree.get_children())
-        dic={}
-        for msg, recip, msger in self.profile.conversation:
+        dic = {}
+        for msg, recip, msger in self.profile.conversation:  # pylint: disable = unused-variable
             if recip not in dic and recip != self.username:
                 dic[recip] = 1
                 self.body.insert_contact(recip)
@@ -276,34 +295,35 @@ class MainApp(tk.Frame):
         # self.profile.dsuserver = ud.server
         # self.profile.save_profile(self.current_file)
 
-        self.direct_messenger = DirectMessenger(self.server, self.username, self.password)
+        self.direct_messenger = DirectMessenger(
+            self.server, self.username, self.password)
 
         # You must implement this!
         # You must configure and instantiate your
         # DirectMessenger instance after this line.
 
     def publish(self, message: str):
-        # You must implement this!
+        """no used"""
         pass
 
     def check_new(self):
-        # You must implement this!
+        """create a new file"""
         if self.direct_messenger:
             new_messages = self.direct_messenger.retrieve_new()
             for msg in new_messages:
                 contact = msg.recipient
-                if contact not in self.body._contacts:
+                if contact not in self.body._contacts:  # pylint: disable = protected-access
                     self.body.insert_contact(contact)
-                self.profile.add_conversation(msg.message
-                                              , self.username, contact)
+                self.profile.add_conversation(
+                    msg.message, self.username, contact)
                 if self.recipient == contact:
                     self.body.insert_contact_message(
                         f"{contact}: {msg.message}")
             self.profile.save_profile(self.current_file)
         self.root.after(2000, self.check_new)
-        pass
 
     def new_file(self):
+        """creates a new file"""
         filepath = filedialog.asksaveasfilename(
             defaultextension=".dsu",
             filetypes=[("DSM Files", "*.dsu")]
@@ -315,13 +335,11 @@ class MainApp(tk.Frame):
                                                  "exists. Choose "
                                                  "a new name.")
             return
-        else:
-            filepath.touch()
+        filepath.touch()
         print(Path(filepath))
         self.current_file = filepath
         self.profile = Profile()
         self.profile.save_profile(filepath)
-
 
     def _draw(self):
         # Build a menu and add it to the root frame.
