@@ -25,13 +25,11 @@ class Body(tk.Frame):
 
         user = self.profile.username
 
-        print(user)
-
-        for msg, recip, sender in reversed(self.profile.conversation):
+        for sender, recip, msg in reversed(self.profile.conversation):
             if sender == user and recip == selected_contact:
-                self.entry_editor.insert(tk.END, f"You: {msg}\n", 'entry-right')
-            elif sender == selected_contact and recip == user:
                 self.entry_editor.insert(tk.END, f"{selected_contact}: {msg}\n", 'entry-left')
+            elif sender == selected_contact and recip == user:
+                self.entry_editor.insert(tk.END, f"You: {msg}\n", 'entry-right')
 
 
     def insert_contact(self, contact: str):
@@ -214,9 +212,10 @@ class MainApp(tk.Frame):
             if self.direct_messenger.send(message, self.recipient):
                 display_msg = message
                 self.body.insert_user_message(f'You: {message}')
-                self.profile.add_conversation(self.username, display_msg, self.recipient)
+                self.profile.add_conversation(display_msg, self.recipient, self.username)
                 self.body.set_text_entry('')
                 self.profile.save_profile(self.current_file)
+                self.body.profile.save_profile(self.current_file)
                 self.footer.footer_label.config(text="Message sent")
             else:
                 self.footer.footer_label.config(text="Error: Failed to send message")
@@ -248,7 +247,6 @@ class MainApp(tk.Frame):
         filepath = Path(self.current_file)
         if filepath.is_file() and filepath.exists() and filepath.suffix == '.dsu':
             self.profile.load_profile(filepath)
-            print(self.profile.username is None)
             if self.profile.username is None and self.profile.password is None and self.profile.dsuserver is None:
                 self.profile.username = ud.user
                 self.profile.password = ud.pwd
@@ -284,7 +282,7 @@ class MainApp(tk.Frame):
         # You must configure and instantiate your
         # DirectMessenger instance after this line.
 
-    def publish(self, message:str):
+    def publish(self, message: str):
         # You must implement this!
         pass
 
@@ -296,9 +294,11 @@ class MainApp(tk.Frame):
                 contact = msg.recipient
                 if contact not in self.body._contacts:
                     self.body.insert_contact(contact)
-                self.profile.add_conversation(msg.message,self.username, contact)
+                self.profile.add_conversation(msg.message
+                                              , self.username, contact)
                 if self.recipient == contact:
-                    self.body.insert_contact_message(f"{contact}: {msg.message}")
+                    self.body.insert_contact_message(
+                        f"{contact}: {msg.message}")
             self.profile.save_profile(self.current_file)
         self.root.after(2000, self.check_new)
         pass
@@ -310,7 +310,10 @@ class MainApp(tk.Frame):
         )
         filepath = Path(filepath)
         if filepath.exists():
-            self.footer.footer_label.config(text="Error: File already exists. Choose a new name.")
+            self.footer.footer_label.config(text="Error: "
+                                                 "File already "
+                                                 "exists. Choose "
+                                                 "a new name.")
             return
         else:
             filepath.touch()
@@ -319,24 +322,6 @@ class MainApp(tk.Frame):
         self.profile = Profile()
         self.profile.save_profile(filepath)
 
-    #
-    # def open_file(self):
-    #     filepath = filedialog.askopenfilename(filetypes=[("DSM Files", "*.dsu")])
-    #     filepath = Path(filepath)
-    #     # print(filepath)
-    #     if filepath:
-    #         self.current_file = filepath
-    #         self.profile = Profile()
-    #         try:
-    #             self.profile.load_profile(filepath)
-    #             # Load contacts into UI
-    #             self.body._contacts.clear()
-    #             self.body.posts_tree.delete(*self.body.posts_tree.get_children())
-    #             for contact in self.profile.conversation.keys():
-    #                 self.body.insert_contact(contact)
-    #             self.footer.footer_label.config(text=f"Opened: {filepath}")
-    #         except Exception as e:
-    #             self.footer.footer_label.config(text=f"Error: {str(e)}")
 
     def _draw(self):
         # Build a menu and add it to the root frame.
