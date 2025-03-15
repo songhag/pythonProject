@@ -40,7 +40,8 @@ class DirectMessenger:
             self.token = join_data.token
 
             return True
-        except:
+        except Exception as e:
+            print(e)
             return False
 
     def send(self, message: str, recipient: str) -> bool:
@@ -89,7 +90,7 @@ class DirectMessenger:
             for msg_dict in messages:
                 dm = DirectMessage()
                 if 'from' in msg_dict:  # Received message (new messages are only incoming)
-                    dm.recipient = self.username
+                    dm.recipient = msg_dict.get('from')
                     dm.message = msg_dict.get('message')
                     dm.timestamp = msg_dict.get('timestamp')
                 dm_list.append(dm)

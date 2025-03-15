@@ -4,8 +4,7 @@
 import json
 import time
 from pathlib import Path
-
-from pyexpat.errors import messages
+from ds_messenger import DirectMessage
 
 """
 
@@ -57,8 +56,7 @@ class Profile:
         self.username = username  # REQUIRED
         self.password = password  # REQUIRED
         #if the recipient is myself, then the message is to me
-        self.conversation={
-        }
+        self.conversation=[]
 
     """
     save_profile accepts an existing dsu file to
@@ -73,7 +71,7 @@ class Profile:
     Raises DsuFileError
 
     """
-    def save_profile(self, path: str) -> None:
+    def save_profile(self, path) -> None:
         p = Path(path)
 
         if p.exists() and p.suffix == '.dsu':
@@ -99,7 +97,7 @@ class Profile:
     Raises DsuProfileError, DsuFileError
 
     """
-    def load_profile(self, path: str) -> None:
+    def load_profile(self, path) -> None:
         p = Path(path)
 
         if p.exists() and p.suffix == '.dsu':
@@ -117,8 +115,5 @@ class Profile:
             raise DsuFileError()
 
 
-    def add_conversation(self, username: str, message: str) -> None:
-        if username in self.conversation:
-            self.conversation[username].append(message)
-        else:
-            self.conversation[username] = [message]
+    def add_conversation(self, messenger: str, message: str, recipient: str) -> None:
+            self.conversation.append((message, recipient, messenger))

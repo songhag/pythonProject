@@ -26,7 +26,7 @@ if messenger.success:
 
     # Send a test message to another user (let's say 'user2')
     recipient = 'user2'
-    message = "Hello! This is a test message."
+    message = "Hello! This is a test message2"
 
     # Send the message
     send_success = messenger.send(message, recipient)
@@ -40,4 +40,13 @@ else:
 
 
 if messenger.success:
-    print(messenger.retrieve_all())
+    ms=messenger.retrieve_all()
+    for i in ms:
+        print(i.message)
+
+print()
+
+if messenger.success:
+    ms=messenger.retrieve_new()
+    for i in ms:
+        print(i.message)

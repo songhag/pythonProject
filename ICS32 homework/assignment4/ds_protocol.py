@@ -29,7 +29,6 @@ def extract_json(json_msg: str) -> DataTuple:
         data_type = response.get('type', 'error')
         messages = response.get('messages', response.get('message', ''))
         token = response.get('token', '')
-        print(messages,token,data_type)
         return DataTuple(data_type, messages, token)
     except json.JSONDecodeError:
         return DataTuple('error', 'Invalid JSON', '')
